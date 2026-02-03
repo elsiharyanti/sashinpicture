@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SashinPicture - Photobooth & Editor</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Bungee&family=Courier+Prime:wght@700&family=Dancing+Script:wght@700&family=Pacifico&family=Playfair+Display:wght@700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=VT323&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script>
+        window.tailwind = {
+            config: {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                            jp: ['"Noto Sans JP"', 'sans-serif'],
+                            hand: ['"Pacifico"', 'cursive'],
+                            retro: ['"VT323"', 'monospace'],
+                            doodle: ['"Amatic SC"', 'cursive'],
+                            bold: ['"Bungee"', 'cursive'],
+                            script: ['"Dancing Script"', 'cursive'],
+                            serif: ['"Playfair Display"', 'serif'],
+                            mono: ['"Courier Prime"', 'monospace'],
+                            digital: ['"Orbitron"', 'sans-serif'],
+                        },
+                        colors: {
+                            primary: '#ec4899', 
+                            secondary: '#fdf2f8', 
+                            dark: '#0f172a',
+                            surface: '#ffffff',
+                        },
+                        screens: {
+                            'xs': '475px',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
+
+    <style>
+        body { overscroll-behavior: none; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px;
+            border-radius: 50%; background: #ec4899; cursor: pointer;
+            margin-top: -6px; box-shadow: 0 2px 5px rgba(236, 72, 153, 0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; background: #e2e8f0; border-radius: 99px;
+        }
+
+        .canvas-bg {
+            background-color: #fdf2f8;
+            background-image: radial-gradient(#fbcfe8 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .active-tab { color: #ec4899; border-bottom-color: #ec4899; }
+        .active-tab i { color: #ec4899; }
+        .active-slot { border-color: #ec4899; background-color: #fce7f3; color: #be185d; }
+        .active-size { background-color: #ec4899; color: white; border-color: #ec4899; }
+
+        /* Sticker Category Tabs */
+        .sticker-cat-btn { transition: all 0.2s; }
+        .sticker-cat-btn.active { background-color: #fce7f3; color: #be185d; border-color: #ec4899; font-weight: 700; }
+        
+        /* Modern Button Hover */
+        .sticker-btn:active { transform: scale(0.9); }
+
+        @keyframes pop { 0% { transform: scale(0.95); } 100% { transform: scale(1); } }
+        .pop-in { animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        .cursor-pointer-canvas { cursor: default; } 
+    </style>
+</head>
+<body class="bg-secondary text-slate-700 h-[100dvh] flex flex-col font-sans overflow-hidden selection:bg-primary selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-surface shadow-sm border-b border-pink-100 z-20 flex-none">
+        <div class="max-w-7xl mx-auto px-4 h-16 lg:h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 relative group cursor-pointer hover:scale-105 transition-transform duration-300">
+                    <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full rounded-xl shadow-lg shadow-pink-500/30">
+                        <defs>
+                            <linearGradient id="header_bg_gradient" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#f472b6" />
+                                <stop offset="50%" stop-color="#db2777" />
+                                <stop offset="100%" stop-color="#be185d" />
+                            </linearGradient>
+                            <linearGradient id="header_shine" x1="0" y1="0" x2="0" y2="256" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="white" stop-opacity="0.3" />
+                                <stop offset="100%" stop-color="white" stop-opacity="0" />
+                            </linearGradient>
+                        </defs>
+                        <rect width="512" height="512" rx="128" fill="url(#header_bg_gradient)" />
+                        <path d="M0 128C0 57.307 57.307 0 128 0H384C454.693 0 512 57.307 512 128V256H0V128Z" fill="url(#header_shine)"/>
+                        <path d="M400 100 L420 120 L400 140 L380 120 Z" fill="#fff" opacity="0.8"/>
+                        <path d="M80 380 L95 395 L80 410 L65 395 Z" fill="#fff" opacity="0.6"/>
+                        <path d="M450 400 L460 410 L450 420 L440 410 Z" fill="#fff" opacity="0.7"/>
+                        <g transform="translate(128, 128) scale(10.66)">
+                            <path d="M4 8C4 6.89543 4.89543 6 6 6H9L10.2 3.6C10.3789 3.24211 10.7444 3 11.1459 3H12.8541C13.2556 3 13.6211 3.24211 13.8 3.6L15 6H18C19.1046 6 20 6.89543 20 8V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V8Z" stroke="white" stroke-width="1.5" fill="none" />
+                            <circle cx="12" cy="13" r="5" stroke="white" stroke-width="1.5"/>
+                            <circle cx="12" cy="13" r="2" fill="white"/>
+                            <circle cx="17" cy="9" r="1" fill="white"/>
+                        </g>
+                    </svg>
+                </div>
+                
+                <h1 class="hidden xs:flex items-baseline gap-1.5 select-none">
+                    <span class="font-hand text-3xl text-pink-600" style="text-shadow: 1px 1px 0px #fce7f3;">Sashin</span>
+                    <span class="font-sans font-extrabold text-xl tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">Picture</span>
+                </h1>
+            </div>
+            
+            <button id="btn-upload-header" class="bg-dark hover:bg-slate-800 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95 hover:shadow-lg">
+                <i class="ph-bold ph-upload-simple"></i>
+                <span>Unggah Foto</span>
+            </button>
+            <input type="file" id="upload-input" class="hidden" accept="image/*">
+            <input type="file" id="replace-input" class="hidden" accept="image/*">
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        <div class="flex-1 relative flex items-center justify-center p-4 lg:p-8 canvas-bg overflow-hidden" id="editor-container">
+            <div id="placeholder-state" class="text-center p-8 border-2 border-dashed border-pink-200 rounded-3xl bg-white/60 backdrop-blur-sm transition-opacity duration-300 max-w-sm mx-auto shadow-sm">
+                <div class="w-24 h-24 bg-gradient-to-br from-pink-50 to-purple-50 text-pink-400 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl animate-bounce shadow-inner border border-white">
+                    <i class="ph-duotone ph-image"></i>
+                </div>
+                <h3 class="text-xl font-bold text-dark mb-2">Mulai Kreasi Fotomu!</h3>
+                <p class="text-slate-500 text-sm mb-6 leading-relaxed">Buat photobooth lucu, edit foto estetik,<br>dan simpan kenanganmu.</p>
+                <button id="btn-upload-placeholder" class="text-white bg-pink-500 hover:bg-pink-600 px-8 py-3 rounded-full font-bold text-sm shadow-lg shadow-pink-200 transition-all active:scale-95 hover:-translate-y-0.5">Pilih Foto dari Galeri</button>
+            </div>
+            <div class="relative w-full h-full flex items-center justify-center">
+                <canvas id="photo-canvas" class="max-w-full max-h-full shadow-2xl rounded-sm hidden pop-in cursor-pointer-canvas object-contain touch-none"></canvas>
+            </div>
+            <div id="photobooth-hint" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-dark/80 text-white px-4 py-2 rounded-full text-xs font-medium backdrop-blur-md shadow-lg hidden pointer-events-none animate-pulse whitespace-nowrap z-10 flex items-center gap-2">
+                <i class="ph-bold ph-hand-tap"></i> Geser stiker sesukamu!
+            </div>
+        </div>
+
+        <aside class="w-full lg:w-80 bg-surface border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-30 h-[50dvh] lg:h-auto transition-all flex-none">
+            
+            <div class="flex border-b border-slate-100 overflow-x-auto no-scrollbar flex-none">
+                <button id="tab-layout" class="flex-1 min-w-[65px] py-3 sm:py-4 text-xs font-bold text-primary border-b-2 border-primary transition-colors flex flex-col items-center gap-1 active-tab cursor-pointer" data-target="panel-layout">
+                    <i class="ph-bold ph-layout text-lg"></i> Layout
+                </button>
+                <button id="tab-adjust" class="flex-1 min-w-[65px] py-3 sm:py-4 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-colors flex flex-col items-center gap-1 cursor-pointer" data-target="panel-adjust">
+                    <i class="ph-bold ph-sliders-horizontal text-lg"></i> Atur
+                </button>
+                <button id="tab-sticker" class="flex-1 min-w-[65px] py-3 sm:py-4 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-colors flex flex-col items-center gap-1 cursor-pointer" data-target="panel-sticker">
+                    <i class="ph-bold ph-sticker text-lg"></i> Stiker
+                </button>
+                <button id="tab-filter" class="flex-1 min-w-[65px] py-3 sm:py-4 text-xs font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition-colors flex flex-col items-center gap-1 cursor-pointer" data-target="panel-filter">
+                    <i class="ph-bold ph-magic-wand text-lg"></i> Filter
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6 relative bg-white touch-pan-y">
+                
+                <!-- PANEL: LAYOUT -->
+                <div id="panel-layout" class="space-y-5 tool-panel">
+                    <div>
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Mode Foto</p>
+                        <div class="bg-slate-100 p-1 rounded-xl flex gap-1">
+                            <button class="mode-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all bg-white text-primary shadow-sm" data-mode="single"><i class="ph-bold ph-square"></i> Tunggal</button>
+                            <button class="mode-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700" data-mode="photobooth"><i class="ph-bold ph-film-strip"></i> Photobooth</button>
+                        </div>
+                    </div>
+
+                    <div id="controls-single" class="space-y-4">
+                        <div class="space-y-2">
+                            <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Ukuran / Rasio</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button class="ratio-btn py-2 border border-slate-200 rounded-lg text-xs hover:border-primary hover:bg-slate-50 transition-all font-medium" data-ratio="original">Asli</button>
+                                <button class="ratio-btn py-2 border border-slate-200 rounded-lg text-xs hover:border-primary hover:bg-slate-50 transition-all font-medium" data-ratio="1:1">1:1</button>
+                                <button class="ratio-btn py-2 border border-slate-200 rounded-lg text-xs hover:border-primary hover:bg-slate-50 transition-all font-medium" data-ratio="3:4">3:4</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 pt-2 border-t border-slate-100">
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Bentuk Foto</p>
+                            </div>
+                            <div class="flex items-center gap-3 mb-3">
+                                <i class="ph-bold ph-arrows-out-simple text-pink-400 text-sm"></i>
+                                <input type="range" id="single-shape-scale" min="0.5" max="1.0" step="0.05" value="1" class="flex-1 h-1.5 bg-pink-200 rounded-lg appearance-none cursor-pointer history-trigger" title="Ukuran Bentuk">
+                            </div>
+                            <div class="grid grid-cols-5 gap-2">
+                                <button class="shape-btn-single p-2 border border-primary bg-pink-50 text-primary rounded-lg transition-all flex flex-col items-center justify-center gap-1 active:scale-95" data-shape="rect"><i class="ph-fill ph-square text-xl"></i></button>
+                                <button class="shape-btn-single p-2 border border-slate-200 text-slate-600 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-1 active:scale-95" data-shape="circle"><i class="ph-fill ph-circle text-xl"></i></button>
+                                <button class="shape-btn-single p-2 border border-slate-200 text-slate-600 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-1 active:scale-95" data-shape="heart"><i class="ph-fill ph-heart text-xl"></i></button>
+                                <button class="shape-btn-single p-2 border border-slate-200 text-slate-600 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-1 active:scale-95" data-shape="pentagon"><i class="ph-fill ph-hexagon text-xl"></i></button>
+                                <button class="shape-btn-single p-2 border border-slate-200 text-slate-600 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-1 active:scale-95" data-shape="cloud"><i class="ph-fill ph-cloud text-xl"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="controls-photobooth" class="space-y-5 hidden">
+                        <div class="space-y-2">
+                            <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Ukuran Kertas (Strip)</p>
+                            <div class="flex gap-2">
+                                <button class="pb-size-btn flex-1 py-2 border border-primary bg-pink-50 text-primary rounded-lg text-xs font-bold transition-all active-size" data-size="default">Auto</button>
+                                <button class="pb-size-btn flex-1 py-2 border border-slate-200 text-slate-600 rounded-lg hover:border-primary hover:bg-slate-50 transition-all text-xs font-bold" data-size="5x15">5x15 cm</button>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-pink-50 rounded-xl border border-pink-100 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <p class="text-[10px] font-bold text-pink-500 uppercase tracking-wider">Posisi & Zoom</p>
+                                <button id="btn-replace-slot" class="text-[10px] font-bold text-white bg-pink-500 px-2 py-1 rounded hover:bg-pink-600 transition-colors flex items-center gap-1 active:scale-95">
+                                    <i class="ph-bold ph-arrows-clockwise"></i> Ganti Foto
+                                </button>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="slot-select-btn flex-1 py-2 rounded-lg border border-pink-200 text-xs font-bold text-pink-700 bg-white hover:bg-pink-50 transition-all active-slot" data-index="0">Slot 1</button>
+                                <button class="slot-select-btn flex-1 py-2 rounded-lg border border-pink-200 text-xs font-bold text-pink-700 bg-white hover:bg-pink-50 transition-all" data-index="1">Slot 2</button>
+                                <button class="slot-select-btn flex-1 py-2 rounded-lg border border-pink-200 text-xs font-bold text-pink-700 bg-white hover:bg-pink-50 transition-all" data-index="2">Slot 3</button>
+                            </div>
+                            
+                            <div class="space-y-3 pt-2 border-t border-pink-100">
+                                <div class="flex items-center gap-3">
+                                    <i class="ph-bold ph-magnifying-glass text-pink-400"></i>
+                                    <input type="range" id="slot-zoom" min="0.5" max="3" step="0.1" value="1" class="flex-1 h-1.5 bg-pink-200 rounded-lg appearance-none cursor-pointer history-trigger" title="Zoom Gambar">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <i class="ph-bold ph-arrows-horizontal text-pink-400"></i>
+                                    <input type="range" id="slot-pan-x" min="-200" max="200" step="5" value="0" class="flex-1 h-1.5 bg-pink-200 rounded-lg appearance-none cursor-pointer history-trigger" title="Geser Horizontal">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <i class="ph-bold ph-arrows-vertical text-pink-400"></i>
+                                    <input type="range" id="slot-pan-y" min="-200" max="200" step="5" value="0" class="flex-1 h-1.5 bg-pink-200 rounded-lg appearance-none cursor-pointer history-trigger" title="Geser Vertikal">
+                                </div>
+                                <div class="flex items-center gap-3 pt-2 border-t border-pink-100">
+                                    <i class="ph-bold ph-arrows-out-simple text-pink-400"></i>
+                                    <input type="range" id="slot-shape-scale" min="0.5" max="1.0" step="0.05" value="1" class="flex-1 h-1.5 bg-pink-200 rounded-lg appearance-none cursor-pointer history-trigger" title="Ukuran Bentuk">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Bentuk (Slot Terpilih)</p>
+                            <div class="grid grid-cols-5 gap-2">
+                                <button class="shape-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-1 active:scale-95 text-slate-600" data-shape="rect"><i class="ph-fill ph-square text-xl"></i></button>
+                                <button class="shape-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-1 active:scale-95 text-slate-600" data-shape="circle"><i class="ph-fill ph-circle text-xl"></i></button>
+                                <button class="shape-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-1 active:scale-95 text-slate-600" data-shape="heart"><i class="ph-fill ph-heart text-xl"></i></button>
+                                <button class="shape-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-1 active:scale-95 text-slate-600" data-shape="pentagon"><i class="ph-fill ph-hexagon text-xl"></i></button>
+                                <button class="shape-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center justify-center gap-1 active:scale-95 text-slate-600" data-shape="cloud"><i class="ph-fill ph-cloud text-xl"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2 border-t border-slate-100">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Tema Bingkai (Global)</p>
+                        <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                            <!-- Patterned Frames -->
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-yellow-200 hover:border-yellow-400 overflow-hidden text-left p-2 transition-all" data-frame="leopard">
+                                <div class="absolute inset-0 bg-[#f4a460]"></div>
+                                <span class="relative z-10 text-xs font-bold text-yellow-900 bg-white/70 px-1 rounded">Leopard 🐆</span>
+                            </button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-800 hover:border-black overflow-hidden text-left p-2 transition-all" data-frame="zebra">
+                                <div class="absolute inset-0 bg-white"></div>
+                                <div class="absolute inset-0" style="background: repeating-linear-gradient(45deg, #000, #000 10px, #fff 10px, #fff 20px);"></div>
+                                <span class="relative z-10 text-xs font-bold text-black bg-white/70 px-1 rounded">Zebra 🦓</span>
+                            </button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-pink-300 hover:border-pink-500 overflow-hidden text-left p-2 transition-all" data-frame="gingham-pink">
+                                <div class="absolute inset-0 bg-white"></div>
+                                <span class="relative z-10 text-xs font-bold text-pink-600 bg-white/70 px-1 rounded">Gingham Pink 🏁</span>
+                            </button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-blue-300 hover:border-blue-500 overflow-hidden text-left p-2 transition-all" data-frame="gingham-blue">
+                                <div class="absolute inset-0 bg-white"></div>
+                                <span class="relative z-10 text-xs font-bold text-blue-600 bg-white/70 px-1 rounded">Gingham Blue 💠</span>
+                            </button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-teal-300 hover:border-teal-500 overflow-hidden text-left p-2 transition-all" data-frame="memphis">
+                                <div class="absolute inset-0 bg-[#f0f8ff]"></div>
+                                <span class="relative z-10 text-xs font-bold text-teal-700 bg-white/70 px-1 rounded">Memphis 🔺</span>
+                            </button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-red-200 hover:border-red-400 overflow-hidden text-left p-2 transition-all" data-frame="sakura">
+                                <div class="absolute inset-0 bg-[#fff0f5]"></div>
+                                <span class="relative z-10 text-xs font-bold text-red-400 bg-white/70 px-1 rounded">Sakura 🌸</span>
+                            </button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-yellow-300 hover:border-yellow-500 overflow-hidden text-left p-2 transition-all" data-frame="lemon">
+                                <div class="absolute inset-0 bg-[#fffff0]"></div>
+                                <span class="relative z-10 text-xs font-bold text-yellow-600 bg-white/70 px-1 rounded">Lemon 🍋</span>
+                            </button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-amber-300 hover:border-amber-500 overflow-hidden text-left p-2 transition-all" data-frame="donut">
+                                <div class="absolute inset-0 bg-[#fff5ee]"></div>
+                                <span class="relative z-10 text-xs font-bold text-amber-700 bg-white/70 px-1 rounded">Donut 🍩</span>
+                            </button>
+
+                            <!-- Vintage & Retro -->
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-800 hover:border-slate-900 overflow-hidden text-left p-2 transition-all" data-frame="film-negative"><div class="absolute inset-0 bg-slate-900"></div><span class="relative z-10 text-xs font-bold text-white">Film Negative 🎞️</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-800 hover:border-slate-900 overflow-hidden text-left p-2 transition-all" data-frame="camcorder"><div class="absolute inset-0 bg-black"></div><span class="relative z-10 text-xs font-bold text-green-400 font-retro">Camcorder 📼</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-amber-200 hover:border-amber-400 overflow-hidden text-left p-2 transition-all" data-frame="old-paper"><div class="absolute inset-0 bg-[#f4e4bc]"></div><span class="relative z-10 text-xs font-bold text-amber-900">Old Paper 📜</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-emerald-500 hover:border-emerald-400 overflow-hidden text-left p-2 transition-all" data-frame="cyber-dark"><div class="absolute inset-0 bg-black"></div><span class="relative z-10 text-xs font-bold text-emerald-400 font-retro">Cyber Dark 💻</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-200 hover:border-slate-400 overflow-hidden text-left p-2 transition-all" data-frame="polaroid"><div class="absolute inset-0 bg-[#fafafa]"></div><div class="absolute inset-0 border-[6px] border-b-[12px] border-white opacity-50"></div><span class="relative z-10 text-xs font-bold text-slate-700">Polaroid 📷</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-100 hover:border-slate-300 overflow-hidden text-left p-2 transition-all" data-frame="simple-white"><div class="absolute inset-0 bg-white"></div><span class="relative z-10 text-xs font-bold text-slate-800">Minimalis</span></button>
+                            
+                            <!-- Elegant -->
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-orange-50 hover:border-orange-200 overflow-hidden text-left p-2 transition-all" data-frame="elegant-cream"><div class="absolute inset-0 bg-[#fdfbf7]"></div><span class="relative z-10 text-xs font-bold text-stone-600">Cream 🥯</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-emerald-50 hover:border-emerald-200 overflow-hidden text-left p-2 transition-all" data-frame="elegant-sage"><div class="absolute inset-0 bg-[#dbe7e4]"></div><span class="relative z-10 text-xs font-bold text-emerald-800">Sage 🌿</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-orange-100 hover:border-orange-300 overflow-hidden text-left p-2 transition-all" data-frame="elegant-mocha"><div class="absolute inset-0 bg-[#f0e6d2]"></div><span class="relative z-10 text-xs font-bold text-amber-900">Mocha ☕</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-200 hover:border-slate-400 overflow-hidden text-left p-2 transition-all" data-frame="elegant-slate"><div class="absolute inset-0 bg-[#cbd5e1]"></div><span class="relative z-10 text-xs font-bold text-slate-800">Slate 🌫️</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-pink-200 hover:border-pink-400 overflow-hidden text-left p-2 transition-all" data-frame="coquette"><div class="absolute inset-0 bg-rose-50"></div><span class="relative z-10 text-xs font-bold text-pink-700">Coquette 🎀</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-300 hover:border-slate-500 overflow-hidden text-left p-2 transition-all" data-frame="y2k"><div class="absolute inset-0 bg-gradient-to-br from-slate-200 via-white to-slate-300"></div><span class="relative z-10 text-xs font-bold text-slate-700">Y2K 💿</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-blue-200 hover:border-blue-400 overflow-hidden text-left p-2 transition-all" data-frame="cloudy"><div class="absolute inset-0 bg-gradient-to-b from-blue-100 to-white"></div><span class="relative z-10 text-xs font-bold text-blue-600">Cloudy ☁️</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-800 hover:border-slate-900 overflow-hidden text-left p-2 transition-all" data-frame="cow"><div class="absolute inset-0 bg-white"></div><div class="absolute inset-0 opacity-80" style="background-image: radial-gradient(black 30%, transparent 31%); background-size: 20px 20px; background-position: 0 0, 10px 10px;"></div><span class="relative z-10 text-xs font-bold text-black bg-white/50 px-1 rounded">Sapi 🐮</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-purple-200 hover:border-purple-400 overflow-hidden text-left p-2 transition-all" data-frame="butterfly"><div class="absolute inset-0 bg-purple-50"></div><span class="relative z-10 text-xs font-bold text-purple-700">Kupu-kupu 🦋</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-800 hover:border-black overflow-hidden text-left p-2 transition-all" data-frame="checkers"><div class="absolute inset-0 bg-white"></div><div class="absolute inset-0 opacity-20" style="background-image: linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(-45deg, #000 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #000 75%), linear-gradient(-45deg, transparent 75%, #000 75%); background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;"></div><span class="relative z-10 text-xs font-bold text-black">Catur 🏁</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-fuchsia-200 hover:border-fuchsia-400 overflow-hidden text-left p-2 transition-all" data-frame="bubblegum"><div class="absolute inset-0 bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300"></div><span class="relative z-10 text-xs font-bold text-white drop-shadow-sm">Bubblegum 🍭</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-slate-100 hover:border-slate-300 overflow-hidden text-left p-2 transition-all" data-frame="film-black"><div class="absolute inset-0 bg-black"></div><span class="relative z-10 text-xs font-bold text-white">Film Mode</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-indigo-200 hover:border-indigo-400 overflow-hidden text-left p-2 transition-all" data-frame="galaxy"><div class="absolute inset-0 bg-gradient-to-b from-slate-900 to-indigo-900"></div><span class="relative z-10 text-xs font-bold text-white">Galaxy ✨</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-orange-200 hover:border-pink-300 overflow-hidden text-left p-2 transition-all" data-frame="sunset"><div class="absolute inset-0 bg-gradient-to-br from-yellow-300 via-orange-300 to-pink-400"></div><span class="relative z-10 text-xs font-bold text-white drop-shadow-sm">Sunset 🌅</span></button>
+                            <button class="frame-btn group relative h-14 sm:h-16 rounded-xl border-2 border-cyan-800 hover:border-cyan-400 overflow-hidden text-left p-2 transition-all" data-frame="retro-grid"><div class="absolute inset-0 bg-slate-900"></div><span class="relative z-10 text-xs font-bold text-cyan-400 font-retro">RETRO</span></button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Gaya Teks Tanggal</p>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button class="font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1" data-font="typewriter"><span class="text-lg font-mono leading-none">Aa</span><span class="text-[9px] text-slate-500">Type</span></button>
+                            <button class="font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1" data-font="doodle"><span class="text-lg font-doodle leading-none">Aa</span><span class="text-[9px] text-slate-500">Doodle</span></button>
+                            <button class="font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1" data-font="hand"><span class="text-lg font-hand leading-none">Aa</span><span class="text-[9px] text-slate-500">Cursive</span></button>
+                            <button class="font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1" data-font="script"><span class="text-lg font-script leading-none">Aa</span><span class="text-[9px] text-slate-500">Elegant</span></button>
+                            <button class="font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1" data-font="retro"><span class="text-lg font-retro leading-none">Aa</span><span class="text-[9px] text-slate-500">Retro</span></button>
+                            <button class="font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1" data-font="bold"><span class="text-lg font-bold leading-none">Aa</span><span class="text-[9px] text-slate-500">Bold</span></button>
+                            <button class="font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1" data-font="serif"><span class="text-lg font-serif leading-none">Aa</span><span class="text-[9px] text-slate-500">Serif</span></button>
+                            <button class="font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1" data-font="modern"><span class="text-lg font-sans leading-none">Aa</span><span class="text-[9px] text-slate-500">Modern</span></button>
+                            <button class="font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1" data-font="digital"><span class="text-lg font-digital leading-none">88</span><span class="text-[9px] text-slate-500">Digital</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL: ADJUST -->
+                <div id="panel-adjust" class="space-y-5 tool-panel hidden">
+                    <div class="space-y-1"><div class="flex justify-between text-xs font-medium text-slate-500"><span>Kecerahan</span> <span id="val-brightness">100%</span></div><input type="range" id="brightness" min="0" max="200" value="100" class="filter-range touch-none history-trigger" data-filter="brightness"></div>
+                    <div class="space-y-1"><div class="flex justify-between text-xs font-medium text-slate-500"><span>Kontras</span> <span id="val-contrast">100%</span></div><input type="range" id="contrast" min="0" max="200" value="100" class="filter-range touch-none history-trigger" data-filter="contrast"></div>
+                    <div class="space-y-1"><div class="flex justify-between text-xs font-medium text-slate-500"><span>Saturasi</span> <span id="val-saturate">100%</span></div><input type="range" id="saturate" min="0" max="200" value="100" class="filter-range touch-none history-trigger" data-filter="saturate"></div>
+                    <div class="space-y-1 pt-4 border-t border-slate-100"><div class="flex justify-between text-xs font-medium text-slate-500"><span>Blur</span> <span id="val-blur">0px</span></div><input type="range" id="blur" min="0" max="10" value="0" step="0.5" class="filter-range touch-none history-trigger" data-filter="blur"></div>
+                </div>
+
+                <!-- PANEL: STICKERS -->
+                <div id="panel-sticker" class="space-y-4 tool-panel hidden">
+                    <!-- Controls -->
+                    <div id="sticker-controls" class="hidden p-3 bg-pink-50 rounded-xl border border-pink-100 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-pink-700">Edit Stiker</span>
+                            <div class="flex gap-2">
+                                <button id="btn-sticker-flip" class="text-pink-500 hover:bg-pink-100 p-1.5 rounded-lg transition-colors"><i class="ph-bold ph-arrows-left-right"></i></button>
+                                <button id="btn-sticker-front" class="text-pink-500 hover:bg-pink-100 p-1.5 rounded-lg transition-colors"><i class="ph-bold ph-stack"></i></button>
+                                <button id="btn-delete-sticker" class="text-red-500 hover:bg-red-100 p-1.5 rounded-lg transition-colors"><i class="ph-bold ph-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                             <div class="flex justify-between text-[10px] font-medium text-slate-500"><span>Ukuran</span></div>
+                             <input type="range" id="sticker-size" min="20" max="300" value="50" class="touch-none w-full h-1 bg-pink-200 rounded-full appearance-none [&::-webkit-slider-thumb]:bg-pink-600 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 history-trigger">
+                        </div>
+                        <div class="space-y-1">
+                             <div class="flex justify-between text-[10px] font-medium text-slate-500"><span>Rotasi</span></div>
+                             <input type="range" id="sticker-rotation" min="-180" max="180" value="0" class="touch-none w-full h-1 bg-pink-200 rounded-full appearance-none [&::-webkit-slider-thumb]:bg-pink-600 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 history-trigger">
+                        </div>
+                    </div>
+
+                    <!-- Category Navigation -->
+                    <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                        <button class="sticker-cat-btn px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200 text-slate-600 whitespace-nowrap active" data-cat="coquette">Coquette 🎀</button>
+                        <button class="sticker-cat-btn px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200 text-slate-600 whitespace-nowrap" data-cat="y2k">Y2K 💿</button>
+                        <button class="sticker-cat-btn px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200 text-slate-600 whitespace-nowrap" data-cat="aesthetic">Aesthetic ✨</button>
+                        <button class="sticker-cat-btn px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200 text-slate-600 whitespace-nowrap" data-cat="mood">Mood 🫠</button>
+                    </div>
+
+                    <!-- Sticker Grids -->
+                    <div id="stickers-coquette" class="sticker-grid grid grid-cols-5 gap-2 text-2xl">
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🎀">🎀</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🦢">🦢</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🩰">🩰</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🧸">🧸</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🕯️">🕯️</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🪞">🪞</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🧴">🧴</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🍰">🍰</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🍒">🍒</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="💌">💌</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🗝️">🗝️</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🏹">🏹</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="☁️">☁️</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🐇">🐇</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="💮">💮</button>
+                    </div>
+
+                    <div id="stickers-y2k" class="sticker-grid grid grid-cols-5 gap-2 text-2xl hidden">
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="💿">💿</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="👾">👾</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🎧">🎧</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🦋">🦋</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🫧">🫧</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="💟">💟</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="☮️">☮️</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="☯️">☯️</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🧿">🧿</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🔮">🔮</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🛸">🛸</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🪐">🪐</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🧷">🧷</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="⛓️">⛓️</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🖤">🖤</button>
+                    </div>
+
+                    <div id="stickers-aesthetic" class="sticker-grid grid grid-cols-5 gap-2 text-2xl hidden">
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="✨">✨</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🌙">🌙</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="⭐">⭐</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🌿">🌿</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🍄">🍄</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🌻">🌻</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🌊">🌊</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🐚">🐚</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🪴">🪴</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🪵">🪵</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🪞">🪞</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🕰️">🕰️</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="📜">📜</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🏷️">🏷️</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="📎">📎</button>
+                    </div>
+
+                    <div id="stickers-mood" class="sticker-grid grid grid-cols-5 gap-2 text-2xl hidden">
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🫠">🫠</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🥹">🥹</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🫡">🫡</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🫶">🫶</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🫣">🫣</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="💅">💅</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="💀">💀</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🤡">🤡</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="👻">👻</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="👀">👀</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🤌">🤌</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🔥">🔥</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="💯">💯</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🆒">🆒</button>
+                        <button class="sticker-btn hover:scale-110 transition-transform" data-emoji="🆒">🆗</button>
+                    </div>
+                </div>
+
+                <!-- PANEL: FILTER -->
+                <div id="panel-filter" class="space-y-5 tool-panel hidden">
+                    <div>
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Efek Warna & Vintage</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="normal">✨ Normal</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="disposable">📸 Disposable</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="instant">🎞️ Instant</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="cyber">👾 Cyber</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="1998">📼 1998</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="summer">☀️ Cerah</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="cool">❄️ Sejuk</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="drama">🎭 Drama</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="matte">🌫️ Pudar</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="noir">🎞️ Noir</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="classic">☕ Klasik</button>
+                            <button class="preset-btn py-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 active:bg-slate-100" data-preset="vintage">🎞️ Vintage</button>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Rotasi</p>
+                        <div class="flex gap-2">
+                            <button id="btn-rotate" class="flex-1 py-3 border border-slate-200 rounded-lg hover:border-primary hover:text-primary transition-colors text-slate-600 active:bg-slate-50"><i class="ph-bold ph-arrow-clockwise text-xl"></i></button>
+                            <button id="btn-flip" class="flex-1 py-3 border border-slate-200 rounded-lg hover:border-primary hover:text-primary transition-colors text-slate-600 active:bg-slate-50"><i class="ph-bold ph-arrows-left-right text-xl"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-slate-100 bg-secondary/30 backdrop-blur-md flex flex-col gap-3 flex-none safe-area-pb">
+                <!-- Input Inisial Pengguna & Export -->
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i class="ph-bold ph-user"></i>
+                        </div>
+                        <input type="text" id="user-initials" placeholder="Inisial Kamu (Cth: ANA)" class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-pink-200 text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-pink-100 bg-white/80 placeholder:text-slate-400 transition-all" maxlength="15">
+                    </div>
+                    <button id="btn-export-csv" class="px-3 py-2 rounded-xl border border-green-200 bg-green-50 text-green-600 hover:bg-green-100 transition-colors" title="Ekspor Data ke Excel/Spreadsheet">
+                        <i class="ph-bold ph-microsoft-excel text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="btn-undo" class="px-4 py-3 rounded-xl border border-slate-300 text-slate-600 hover:bg-white transition-colors cursor-pointer active:scale-95 disabled:opacity-30" disabled title="Undo">
+                        <i class="ph-bold ph-arrow-u-up-left"></i>
+                    </button>
+                    <button id="btn-redo" class="px-4 py-3 rounded-xl border border-slate-300 text-slate-600 hover:bg-white transition-colors cursor-pointer active:scale-95 disabled:opacity-30" disabled title="Redo">
+                        <i class="ph-bold ph-arrow-u-up-right"></i>
+                    </button>
+                    <button id="btn-reset" class="px-4 py-3 rounded-xl border border-slate-300 text-slate-600 hover:bg-white hover:text-red-500 transition-colors cursor-pointer active:scale-95" title="Reset">
+                        <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                    </button>
+                    <button id="btn-save" class="flex-1 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-pink-200 hover:bg-pink-600 hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-95" disabled>
+                        <i class="ph-bold ph-download-simple"></i> <span class="hidden xs:inline">Simpan</span><span class="xs:hidden">Save</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Save Modal -->
+    <div id="save-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-6 w-80 shadow-2xl transform scale-95 transition-transform duration-300" id="save-modal-content">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Simpan Pesanan</h3>
+            <p class="text-sm text-slate-500 mb-4">Masukkan inisial Anda untuk menyimpan riwayat pesanan.</p>
+            <input type="text" id="input-initials" placeholder="Contoh: AD" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 mb-4 uppercase" maxlength="5">
+            <div class="flex gap-2">
+                <button id="btn-cancel-save" class="flex-1 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                <button id="btn-confirm-save" class="flex-1 py-2 text-xs font-bold text-white bg-pink-500 hover:bg-pink-600 rounded-lg shadow-md transition-colors">Simpan & Unduh</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div id="toast-container" class="fixed top-16 right-5 left-5 sm:left-auto z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STATE ---
+            let state = {
+                image: null,
+                photoboothSlots: [
+                    { img: null, shape: 'rect', shapeScale: 1, zoom: 1, panY: 0, panX: 0 },
+                    { img: null, shape: 'rect', shapeScale: 1, zoom: 1, panY: 0, panX: 0 },
+                    { img: null, shape: 'rect', shapeScale: 1, zoom: 1, panY: 0, panX: 0 }
+                ],
+                activeSlotIndex: 0, 
+                layout: 'single', 
+                aspectRatio: 'original',
+                singleShape: 'rect', 
+                singleShapeScale: 1, 
+                pbPaperSize: 'default',
+                frameStyle: 'simple-white',
+                fontStyle: 'typewriter',
+                stickers: [], // {id, text, x, y, size, rotation, flipX}
+                activeStickerId: null,
+                filters: { brightness: 100, contrast: 100, saturate: 100, blur: 0, grayscale: 0, sepia: 0, hueRotate: 0 },
+                rotate: 0,
+                flipH: 1
+            };
+
+            // Undo/Redo History
+            const MAX_HISTORY = 20;
+            let historyStack = [];
+            let historyStep = -1;
+            let isUndoing = false;
+
+            // Layout Constants
+            const PB_PADDING = 40;
+            const PB_GAP = 30;
+            const PB_BOTTOM = 120;
+            const PB_STRIP_W = 600;
+            const PB_COUNT = 3;
+
+            // --- ELEMENTS ---
+            const canvas = document.getElementById("photo-canvas");
+            const ctx = canvas ? canvas.getContext("2d") : null;
+            const fileInput = document.getElementById("upload-input");
+            const replaceInput = document.getElementById("replace-input");
+            const hint = document.getElementById("photobooth-hint");
+            const undoBtn = document.getElementById('btn-undo');
+            const redoBtn = document.getElementById('btn-redo');
+
+            // Modal Elements
+            const saveModal = document.getElementById('save-modal');
+            const saveModalContent = document.getElementById('save-modal-content');
+            const inputInitials = document.getElementById('input-initials');
+            const btnConfirmSave = document.getElementById('btn-confirm-save');
+            const btnCancelSave = document.getElementById('btn-cancel-save');
+            
+            // --- HISTORY FUNCTIONS ---
+            function cloneState(s) {
+                return {
+                    photoboothSlots: s.photoboothSlots.map(slot => ({ ...slot })),
+                    stickers: JSON.parse(JSON.stringify(s.stickers)),
+                    filters: { ...s.filters },
+                    layout: s.layout,
+                    aspectRatio: s.aspectRatio,
+                    singleShape: s.singleShape,
+                    singleShapeScale: s.singleShapeScale,
+                    pbPaperSize: s.pbPaperSize,
+                    frameStyle: s.frameStyle,
+                    fontStyle: s.fontStyle,
+                    rotate: s.rotate,
+                    flipH: s.flipH,
+                    activeSlotIndex: s.activeSlotIndex,
+                };
+            }
+
+            function saveHistory() {
+                if (isUndoing) return;
+                if (historyStep < historyStack.length - 1) {
+                    historyStack = historyStack.slice(0, historyStep + 1);
+                }
+                historyStack.push(cloneState(state));
+                if (historyStack.length > MAX_HISTORY) historyStack.shift();
+                else historyStep++;
+                updateHistoryButtons();
+            }
+
+            function updateHistoryButtons() {
+                undoBtn.disabled = historyStep <= 0;
+                redoBtn.disabled = historyStep >= historyStack.length - 1;
+                undoBtn.style.opacity = undoBtn.disabled ? '0.3' : '1';
+                redoBtn.style.opacity = redoBtn.disabled ? '0.3' : '1';
+            }
+
+            function handleUndo() {
+                if (historyStep > 0) {
+                    isUndoing = true;
+                    historyStep--;
+                    restoreState(historyStack[historyStep]);
+                    isUndoing = false;
+                    updateHistoryButtons();
+                    renderApp();
+                    showToast("Undo ↩️");
+                }
+            }
+
+            function handleRedo() {
+                if (historyStep < historyStack.length - 1) {
+                    isUndoing = true;
+                    historyStep++;
+                    restoreState(historyStack[historyStep]);
+                    isUndoing = false;
+                    updateHistoryButtons();
+                    renderApp();
+                    showToast("Redo ↪️");
+                }
+            }
+
+            function restoreState(savedState) {
+                state.layout = savedState.layout;
+                state.aspectRatio = savedState.aspectRatio;
+                state.singleShape = savedState.singleShape || 'rect';
+                state.singleShapeScale = savedState.singleShapeScale || 1;
+                state.pbPaperSize = savedState.pbPaperSize || 'default';
+                state.frameStyle = savedState.frameStyle;
+                state.fontStyle = savedState.fontStyle;
+                state.rotate = savedState.rotate;
+                state.flipH = savedState.flipH;
+                state.activeSlotIndex = savedState.activeSlotIndex;
+                state.stickers = JSON.parse(JSON.stringify(savedState.stickers));
+                state.filters = { ...savedState.filters };
+                state.photoboothSlots = savedState.photoboothSlots.map(s => ({ ...s }));
+                syncUI();
+            }
+
+            function syncUI() {
+                ['brightness', 'contrast', 'saturate', 'blur'].forEach(f => {
+                    const el = document.getElementById(f);
+                    if(el) { el.value = state.filters[f]; document.getElementById(`val-${f}`).innerText = (f === 'blur') ? el.value + 'px' : el.value + '%'; }
+                });
+                document.querySelectorAll('.mode-btn').forEach(b => {
+                    if (b.dataset.mode === state.layout) b.className = "mode-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all bg-white text-primary shadow-sm cursor-pointer";
+                    else b.className = "mode-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 cursor-pointer";
+                });
+                if(state.layout === 'single') {
+                    document.getElementById('controls-single').classList.remove('hidden');
+                    document.getElementById('controls-photobooth').classList.add('hidden');
+                    hint.classList.add('hidden');
+                } else {
+                    document.getElementById('controls-single').classList.add('hidden');
+                    document.getElementById('controls-photobooth').classList.remove('hidden');
+                    hint.classList.remove('hidden');
+                    updateSlotControlsUI();
+                }
+                
+                document.querySelectorAll('.shape-btn-single').forEach(b => {
+                    b.classList.remove('border-primary', 'bg-pink-50', 'text-primary');
+                    b.classList.add('border-slate-200', 'text-slate-600');
+                    if(b.dataset.shape === state.singleShape) {
+                        b.classList.remove('border-slate-200', 'text-slate-600');
+                        b.classList.add('border-primary', 'bg-pink-50', 'text-primary');
+                    }
+                });
+                document.getElementById('single-shape-scale').value = state.singleShapeScale;
+
+                document.querySelectorAll('.pb-size-btn').forEach(b => {
+                    if (b.dataset.size === state.pbPaperSize) {
+                        b.classList.add('active-size');
+                        b.classList.remove('border-slate-200', 'text-slate-600', 'hover:border-primary', 'hover:bg-slate-50');
+                        b.classList.add('border-primary', 'bg-pink-50', 'text-primary');
+                    } else {
+                        b.classList.remove('active-size', 'border-primary', 'bg-pink-50', 'text-primary');
+                        b.classList.add('border-slate-200', 'text-slate-600', 'hover:border-primary', 'hover:bg-slate-50');
+                    }
+                });
+
+                updateActiveFontButton();
+                updateSlotControlsUI();
+                updateStickerControlsUI();
+            }
+
+            // --- HANDLERS ---
+            undoBtn.addEventListener('click', handleUndo);
+            redoBtn.addEventListener('click', handleRedo);
+
+            const handleUpload = () => fileInput.click();
+            document.getElementById('btn-upload-header').addEventListener('click', handleUpload);
+            document.getElementById('btn-upload-placeholder').addEventListener('click', handleUpload);
+            document.getElementById('btn-replace-slot').addEventListener('click', () => replaceInput.click());
+            
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        state.image = img;
+                        state.photoboothSlots = [
+                            { img: img, shape: 'rect', shapeScale: 1, zoom: 1, panY: 0, panX: 0 },
+                            { img: img, shape: 'rect', shapeScale: 1, zoom: 1, panY: 0, panX: 0 },
+                            { img: img, shape: 'rect', shapeScale: 1, zoom: 1, panY: 0, panX: 0 }
+                        ];
+                        historyStack = []; historyStep = -1; saveHistory();
+                        resetAllUI(); renderApp();
+                        document.getElementById('placeholder-state').classList.add('hidden');
+                        canvas.classList.remove('hidden');
+                        document.getElementById('btn-save').disabled = false;
+                        showToast("Foto siap diedit! 🎨", "success");
+                    };
+                    img.src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            replaceInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        state.photoboothSlots[state.activeSlotIndex].img = img;
+                        state.photoboothSlots[state.activeSlotIndex].zoom = 1;
+                        state.photoboothSlots[state.activeSlotIndex].panY = 0;
+                        state.photoboothSlots[state.activeSlotIndex].panX = 0;
+                        saveHistory(); updateSlotControlsUI(); renderApp();
+                        showToast(`Foto Slot ${state.activeSlotIndex + 1} berhasil diganti!`, "success");
+                    };
+                    img.src = evt.target.result;
+                }
+                reader.readAsDataURL(file);
+                replaceInput.value = ''; 
+            });
+
+            // Canvas Interaction
+            let isDragging = false;
+            let dragTarget = null; // 'slot' or 'sticker'
+            let dragStart = { x: 0, y: 0 };
+            
+            function getCanvasCoordinates(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+            }
+
+            function handlePointerDown(e) {
+                if (!state.image) return;
+                const coords = getCanvasCoordinates(e);
+                
+                // 1. Check Stickers First (Top Layer)
+                let hitStickerId = null;
+                for (let i = state.stickers.length - 1; i >= 0; i--) {
+                    const s = state.stickers[i];
+                    const dist = Math.sqrt(Math.pow(coords.x - s.x, 2) + Math.pow(coords.y - s.y, 2));
+                    if (dist < s.size / 1.5) {
+                        hitStickerId = s.id;
+                        break;
+                    }
+                }
+
+                if (hitStickerId) {
+                    state.activeStickerId = hitStickerId;
+                    isDragging = true;
+                    dragTarget = 'sticker';
+                    updateStickerControlsUI();
+                    renderApp();
+                    return;
+                } else {
+                    if (state.activeStickerId) {
+                        state.activeStickerId = null;
+                        updateStickerControlsUI();
+                        renderApp();
+                    }
+                }
+
+                // 2. Check Photobooth Slots
+                if (state.layout === 'photobooth') {
+                    let canvasW = PB_STRIP_W; 
+                    let stripH, photoH, currentY;
+                    let photoW = PB_STRIP_W - (PB_PADDING * 2);
+
+                    if (state.pbPaperSize === '5x15') {
+                        canvasW = 600;
+                        photoW = 480;
+                        const photoH_local = 480; 
+                         currentY = 90;
+                         photoH = photoH_local;
+                    } else {
+                         const baseImg = state.photoboothSlots[0].img || state.image;
+                         const processedBase = processImage(baseImg); 
+                         const scale = photoW / processedBase.width;
+                         photoH = processedBase.height * scale;
+                         currentY = PB_PADDING;
+                    }
+                    
+                    for (let i = 0; i < PB_COUNT; i++) {
+                         if (coords.y >= currentY && coords.y <= currentY + photoH) {
+                             state.activeSlotIndex = i;
+                             updateSlotControlsUI();
+                             renderApp();
+                             
+                             isDragging = true;
+                             dragTarget = 'slot';
+                             dragStart = coords;
+                             return;
+                         }
+                         
+                         if (state.pbPaperSize === '5x15') {
+                            currentY += photoH + 90; 
+                        } else {
+                            currentY += photoH + PB_GAP;
+                        }
+                    }
+                }
+            }
+
+            function handlePointerMove(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                const coords = getCanvasCoordinates(e);
+
+                if (dragTarget === 'sticker' && state.activeStickerId) {
+                    const sticker = state.stickers.find(s => s.id === state.activeStickerId);
+                    if (sticker) { 
+                        sticker.x = coords.x; 
+                        sticker.y = coords.y; 
+                        renderApp(); 
+                    }
+                } 
+                else if (dragTarget === 'slot' && state.layout === 'photobooth') {
+                    const dx = coords.x - dragStart.x;
+                    const dy = coords.y - dragStart.y;
+                    
+                    state.photoboothSlots[state.activeSlotIndex].panX += dx;
+                    state.photoboothSlots[state.activeSlotIndex].panY += dy;
+                    
+                    dragStart = coords; 
+                    renderApp();
+                    updateSlotControlsUI(); 
+                }
+            }
+
+            function handlePointerUp() { 
+                if (isDragging) {
+                    saveHistory(); 
+                }
+                isDragging = false; 
+                dragTarget = null;
+            }
+
+            canvas.addEventListener('mousedown', handlePointerDown);
+            canvas.addEventListener('mousemove', handlePointerMove);
+            canvas.addEventListener('mouseup', handlePointerUp);
+            canvas.addEventListener('touchstart', handlePointerDown, {passive: false});
+            canvas.addEventListener('touchmove', handlePointerMove, {passive: false});
+            canvas.addEventListener('touchend', handlePointerUp);
+
+            // Tabs & Mode
+            document.querySelectorAll('[id^="tab-"]').forEach(tab => tab.addEventListener('click', (e) => {
+                document.querySelectorAll('[id^="tab-"]').forEach(t => t.className = t.className.replace('text-primary border-b-2 border-primary active-tab', 'text-slate-400 border-b-2 border-transparent hover:text-slate-600'));
+                document.querySelectorAll('.tool-panel').forEach(p => p.classList.add('hidden'));
+                const btn = e.currentTarget;
+                btn.className = "flex-1 min-w-[65px] py-3 sm:py-4 text-xs font-bold text-primary border-b-2 border-primary transition-colors flex flex-col items-center gap-1 active-tab cursor-pointer";
+                document.getElementById(btn.dataset.target).classList.remove('hidden');
+            }));
+
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                const mode = e.currentTarget.dataset.mode;
+                state.layout = mode;
+                state.activeStickerId = null;
+                
+                document.querySelectorAll('.mode-btn').forEach(b => b.className = "mode-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 cursor-pointer");
+                e.currentTarget.className = "mode-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all bg-white text-primary shadow-sm cursor-pointer";
+                
+                if(mode === 'single') {
+                    document.getElementById('controls-single').classList.remove('hidden');
+                    document.getElementById('controls-photobooth').classList.add('hidden');
+                    hint.classList.add('hidden');
+                } else {
+                    document.getElementById('controls-single').classList.add('hidden');
+                    document.getElementById('controls-photobooth').classList.remove('hidden');
+                    hint.classList.remove('hidden');
+                    updateSlotControlsUI();
+                }
+                saveHistory(); renderApp();
+            }));
+
+            // Slot Controls
+            document.querySelectorAll('.slot-select-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                state.activeSlotIndex = parseInt(e.currentTarget.dataset.index);
+                updateSlotControlsUI();
+                renderApp();
+            }));
+
+            const slotZoom = document.getElementById('slot-zoom');
+            const slotPanY = document.getElementById('slot-pan-y');
+            const slotPanX = document.getElementById('slot-pan-x');
+            const slotShapeScale = document.getElementById('slot-shape-scale');
+
+            slotZoom.addEventListener('input', (e) => { state.photoboothSlots[state.activeSlotIndex].zoom = parseFloat(e.target.value); renderApp(); });
+            slotZoom.addEventListener('change', () => saveHistory());
+            slotPanY.addEventListener('input', (e) => { state.photoboothSlots[state.activeSlotIndex].panY = parseInt(e.target.value); renderApp(); });
+            slotPanY.addEventListener('change', () => saveHistory());
+            slotPanX.addEventListener('input', (e) => { state.photoboothSlots[state.activeSlotIndex].panX = parseInt(e.target.value); renderApp(); });
+            slotPanX.addEventListener('change', () => saveHistory());
+            slotShapeScale.addEventListener('input', (e) => { state.photoboothSlots[state.activeSlotIndex].shapeScale = parseFloat(e.target.value); renderApp(); });
+            slotShapeScale.addEventListener('change', () => saveHistory());
+
+            function updateSlotControlsUI() {
+                document.querySelectorAll('.slot-select-btn').forEach(btn => {
+                    const idx = parseInt(btn.dataset.index);
+                    if (idx === state.activeSlotIndex) btn.className = "slot-select-btn flex-1 py-2 rounded-lg border border-pink-500 text-xs font-bold text-white bg-pink-500 transition-all shadow-md";
+                    else btn.className = "slot-select-btn flex-1 py-2 rounded-lg border border-pink-200 text-xs font-bold text-pink-700 bg-white hover:bg-pink-50 transition-all";
+                });
+                const currentSlot = state.photoboothSlots[state.activeSlotIndex];
+                slotZoom.value = currentSlot.zoom;
+                slotPanY.value = currentSlot.panY;
+                slotPanX.value = currentSlot.panX;
+                slotShapeScale.value = currentSlot.shapeScale;
+
+                document.querySelectorAll('.shape-btn').forEach(b => {
+                    b.classList.remove('border-primary', 'bg-pink-50', 'text-primary');
+                    b.classList.add('border-slate-200', 'text-slate-600');
+                    if (b.dataset.shape === currentSlot.shape) {
+                        b.classList.remove('border-slate-200', 'text-slate-600');
+                        b.classList.add('border-primary', 'bg-pink-50', 'text-primary');
+                    }
+                });
+            }
+
+            // General Controls
+            document.querySelectorAll('.ratio-btn').forEach(btn => btn.addEventListener('click', (e) => { state.aspectRatio = e.target.dataset.ratio; saveHistory(); renderApp(); }));
+            
+            document.querySelectorAll('.frame-btn').forEach(btn => btn.addEventListener('click', (e) => { 
+                const frame = e.currentTarget.dataset.frame;
+                state.frameStyle = frame;
+                if (frame === 'camcorder' || frame === 'cyber-dark') state.fontStyle = 'digital';
+                else if (frame === 'simple-white' || frame === 'film-black' || frame === 'film-negative') state.fontStyle = 'typewriter';
+                else if (frame === 'coquette' || frame === 'cute-pink' || frame === 'strawberry' || frame === 'polaroid') state.fontStyle = 'hand';
+                else if (frame === 'galaxy' || frame === 'y2k' || frame === 'butterfly' || frame === 'bubblegum') state.fontStyle = 'script';
+                else if (frame === 'sunset' || frame === 'elegant-cream' || frame === 'elegant-sage' || frame === 'elegant-mocha') state.fontStyle = 'serif';
+                else if (frame === 'retro-grid' || frame === 'checkers') state.fontStyle = 'retro';
+                else if (frame === 'minty' || frame === 'cloudy') state.fontStyle = 'doodle';
+                else if (frame === 'modern-blue' || frame === 'elegant-slate') state.fontStyle = 'bold';
+                else if (frame === 'old-paper') state.fontStyle = 'typewriter';
+                else state.fontStyle = 'modern';
+                updateActiveFontButton(); saveHistory(); renderApp(); showToast("Tema diterapkan ✨");
+            }));
+            
+            document.querySelectorAll('.font-btn').forEach(btn => btn.addEventListener('click', (e) => { state.fontStyle = e.currentTarget.dataset.font; updateActiveFontButton(); saveHistory(); renderApp(); }));
+            function updateActiveFontButton() {
+                document.querySelectorAll('.font-btn').forEach(btn => {
+                    if (btn.dataset.font === state.fontStyle) btn.className = "font-btn p-2 border-2 border-primary bg-pink-50 rounded-lg transition-all flex flex-col items-center gap-1";
+                    else btn.className = "font-btn p-2 border border-slate-200 rounded-lg hover:border-primary hover:bg-slate-50 transition-all flex flex-col items-center gap-1";
+                });
+            }
+
+            document.querySelectorAll('.shape-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                state.photoboothSlots[state.activeSlotIndex].shape = e.currentTarget.dataset.shape;
+                updateSlotControlsUI(); saveHistory(); renderApp();
+            }));
+
+            // Sticker Tab Switching
+            document.querySelectorAll('.sticker-cat-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.sticker-cat-btn').forEach(b => b.classList.remove('active', 'bg-pink-50', 'text-pink-700', 'border-pink-500'));
+                e.currentTarget.classList.add('active', 'bg-pink-50', 'text-pink-700', 'border-pink-500');
+                const cat = e.currentTarget.dataset.cat;
+                document.querySelectorAll('.sticker-grid').forEach(g => g.classList.add('hidden'));
+                document.getElementById(`stickers-${cat}`).classList.remove('hidden');
+            }));
+
+            document.querySelectorAll('.sticker-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                if(!state.image) { showToast("Unggah foto dulu ya!", "error"); return; }
+                const newSticker = { id: Date.now(), text: e.currentTarget.dataset.emoji, x: canvas.width/2, y: canvas.height/2, size: 80, rotation: 0, flipX: false };
+                state.stickers.push(newSticker); state.activeStickerId = newSticker.id; 
+                updateStickerControlsUI(); saveHistory(); renderApp(); showToast("Stiker ditambahkan!");
+            }));
+            
+            document.getElementById('btn-delete-sticker').addEventListener('click', () => {
+                state.stickers = state.stickers.filter(s => s.id !== state.activeStickerId); state.activeStickerId = null; 
+                updateStickerControlsUI(); saveHistory(); renderApp();
+            });
+            document.getElementById('btn-sticker-flip').addEventListener('click', () => {
+                if(state.activeStickerId) {
+                    const s = state.stickers.find(s => s.id === state.activeStickerId);
+                    if(s) { s.flipX = !s.flipX; saveHistory(); renderApp(); }
+                }
+            });
+            document.getElementById('btn-sticker-front').addEventListener('click', () => {
+                if(state.activeStickerId) {
+                    const idx = state.stickers.findIndex(s => s.id === state.activeStickerId);
+                    if(idx > -1 && idx < state.stickers.length - 1) {
+                        const s = state.stickers.splice(idx, 1)[0];
+                        state.stickers.push(s);
+                        saveHistory(); renderApp();
+                    }
+                }
+            });
+
+            document.getElementById('sticker-size').addEventListener('input', (e) => { 
+                if(state.activeStickerId) { const s = state.stickers.find(s => s.id === state.activeStickerId); if(s) { s.size = parseInt(e.target.value); renderApp(); } } 
+            });
+            document.getElementById('sticker-size').addEventListener('change', () => saveHistory());
+            document.getElementById('sticker-rotation').addEventListener('input', (e) => { 
+                if(state.activeStickerId) { const s = state.stickers.find(s => s.id === state.activeStickerId); if(s) { s.rotation = parseInt(e.target.value); renderApp(); } } 
+            });
+            document.getElementById('sticker-rotation').addEventListener('change', () => saveHistory());
+
+            function updateStickerControlsUI() {
+                const controls = document.getElementById('sticker-controls');
+                if (state.activeStickerId) {
+                    controls.classList.remove('hidden');
+                    const s = state.stickers.find(s => s.id === state.activeStickerId);
+                    if(s) { document.getElementById('sticker-size').value = s.size; document.getElementById('sticker-rotation').value = s.rotation; }
+                } else controls.classList.add('hidden');
+            }
+
+            // Filters
+            document.querySelectorAll('.filter-range').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    state.filters[e.target.dataset.filter] = parseFloat(e.target.value);
+                    const label = document.getElementById(`val-${e.target.dataset.filter}`);
+                    if(label) label.innerText = (e.target.dataset.filter === 'blur') ? e.target.value + 'px' : e.target.value + '%';
+                    renderApp();
+                });
+                input.addEventListener('change', () => saveHistory());
+            });
+
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.addEventListener('click', (e) => { applyPreset(e.target.dataset.preset); saveHistory(); }));
+            document.getElementById('btn-rotate').addEventListener('click', () => { state.rotate = (state.rotate + 90) % 360; saveHistory(); renderApp(); });
+            document.getElementById('btn-flip').addEventListener('click', () => { state.flipH *= -1; saveHistory(); renderApp(); });
+            
+            document.getElementById('btn-reset').addEventListener('click', () => { if(!state.image) return; resetAllUI(); saveHistory(); renderApp(); showToast("Pengaturan di-reset"); });
+            
+            // SAVE MODAL LOGIC
+            document.getElementById('btn-save').addEventListener('click', () => {
+                if(!state.image) return;
+                // Show modal
+                saveModal.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    saveModal.classList.remove('opacity-0');
+                    saveModalContent.classList.remove('scale-95');
+                    saveModalContent.classList.add('scale-100');
+                });
+                inputInitials.value = '';
+                inputInitials.focus();
+            });
+
+            btnCancelSave.addEventListener('click', closeModal);
+
+            function closeModal() {
+                saveModal.classList.add('opacity-0');
+                saveModalContent.classList.remove('scale-100');
+                saveModalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    saveModal.classList.add('hidden');
+                }, 300);
+            }
+
+            btnConfirmSave.addEventListener('click', () => {
+                const initials = inputInitials.value.trim().toUpperCase();
+                if (!initials) {
+                    showToast("Mohon isi inisial!", "error");
+                    return;
+                }
+
+                // 1. Save to Local Storage
+                const orderData = {
+                    timestamp: new Date().toLocaleString('id-ID'),
+                    initials: initials,
+                    layout: state.layout === 'single' ? 'Tunggal' : 'Photobooth', 
+                    filters: `B:${state.filters.brightness}% C:${state.filters.contrast}% S:${state.filters.saturate}%`,
+                    stickers: state.stickers.map(s => s.text).join(', ') || '-',
+                    frameStyle: state.frameStyle
+                };
+
+                try {
+                    let orders = JSON.parse(localStorage.getItem('shashinshoot_orders') || '[]');
+                    orders.push(orderData);
+                    localStorage.setItem('shashinshoot_orders', JSON.stringify(orders));
+                } catch (e) {
+                    console.error("Gagal menyimpan ke Local Storage", e);
+                }
+
+                // 2. Download Image
+                const prevSelection = state.activeStickerId; state.activeStickerId = null; 
+                const prevActiveSlot = state.activeSlotIndex; state.activeSlotIndex = -1; 
+                renderApp(); 
+                
+                const link = document.createElement('a'); 
+                link.download = `SashinPicture_${initials}_${Date.now()}.png`; 
+                link.href = canvas.toDataURL("image/png", 1.0); 
+                link.click(); 
+
+                // Restore state
+                state.activeStickerId = prevSelection; 
+                state.activeSlotIndex = prevActiveSlot;
+                renderApp();
+
+                showToast("Pesanan disimpan & Foto diunduh!", "success");
+                closeModal();
+            });
+            
+            document.getElementById('btn-export-csv').addEventListener('click', () => {
+                const orders = JSON.parse(localStorage.getItem('shashinshoot_orders') || '[]');
+                if (orders.length === 0) {
+                    showToast("Belum ada data pesanan!", "error");
+                    return;
+                }
+
+                let csvContent = "data:text/csv;charset=utf-8,";
+                // Header sesuai permintaan: Timestamps, Inisial Pengguna, Layout, Filter, Sticker
+                csvContent += "Timestamps,Inisial Pengguna,Layout,Filter,Sticker\n";
+
+                orders.forEach(order => {
+                    // Data sudah diformat saat disimpan di btnConfirmSave, tapi kita pastikan aman untuk CSV
+                    // Menggunakan tanda kutip untuk menangani koma dalam data
+                    const row = [
+                        `"${order.timestamp}"`,
+                        `"${order.initials}"`,
+                        `"${order.layout}"`,
+                        `"${order.filters}"`,
+                        `"${order.stickers}"`
+                    ].join(",");
+                    csvContent += row + "\n";
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "sashin_picture_orders.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast("Data diekspor ke CSV!");
+            });
+
+            document.querySelectorAll('.pb-size-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                state.pbPaperSize = e.currentTarget.dataset.size;
+                saveHistory(); syncUI(); renderApp();
+            }));
+
+            // Logic Helpers
+            function resetAllUI() {
+                state.layout = 'single'; state.aspectRatio = 'original'; state.frameStyle = 'simple-white'; state.fontStyle = 'typewriter'; state.activeSlotIndex = 0; state.stickers = []; state.activeStickerId = null;
+                state.singleShape = 'rect'; state.singleShapeScale = 1; state.pbPaperSize = 'default';
+                state.filters = { brightness: 100, contrast: 100, saturate: 100, blur: 0, grayscale: 0, sepia: 0, hueRotate: 0 }; state.rotate = 0; state.flipH = 1;
+                if(state.image) {
+                    state.photoboothSlots = [ { img: state.image, shape: 'rect', shapeScale: 1, zoom: 1, panY: 0, panX: 0 }, { img: state.image, shape: 'rect', shapeScale: 1, zoom: 1, panY: 0, panX: 0 }, { img: state.image, shape: 'rect', shapeScale: 1, zoom: 1, panY: 0, panX: 0 } ];
+                }
+                syncUI();
+            }
+
+            function applyPreset(name) {
+                state.filters.brightness = 100; state.filters.contrast = 100; state.filters.saturate = 100; state.filters.grayscale = 0; state.filters.sepia = 0; state.filters.hueRotate = 0;
+                if(name === 'grayscale') state.filters.grayscale = 100; if(name === 'sepia') state.filters.sepia = 100;
+                if(name === 'vintage') { state.filters.sepia = 40; state.filters.contrast = 85; state.filters.brightness = 110; state.filters.saturate = 70; }
+                if(name === 'summer') { state.filters.brightness = 110; state.filters.saturate = 130; state.filters.sepia = 10; }
+                if(name === 'cool') { state.filters.contrast = 110; state.filters.brightness = 105; state.filters.saturate = 90; }
+                if(name === 'drama') { state.filters.contrast = 125; state.filters.saturate = 110; state.filters.brightness = 95; }
+                if(name === 'matte') { state.filters.contrast = 85; state.filters.brightness = 115; state.filters.saturate = 85; }
+                if(name === 'noir') { state.filters.grayscale = 100; state.filters.contrast = 130; state.filters.brightness = 90; }
+                if(name === 'classic') { state.filters.sepia = 30; state.filters.contrast = 110; state.filters.saturate = 90; }
+                if(name === 'disposable') { state.filters.brightness = 110; state.filters.contrast = 110; state.filters.saturate = 110; state.filters.hueRotate = -5; }
+                if(name === 'instant') { state.filters.sepia = 20; state.filters.contrast = 90; state.filters.brightness = 110; state.filters.saturate = 80; }
+                if(name === 'cyber') { state.filters.contrast = 120; state.filters.saturate = 150; state.filters.hueRotate = 10; }
+                if(name === '1998') { state.filters.sepia = 20; state.filters.contrast = 95; state.filters.saturate = 85; }
+
+                syncUI(); renderApp(); showToast("Filter diterapkan");
+            }
+
+            function processImage(img) {
+                const tempCanvas = document.createElement('canvas'); const tCtx = tempCanvas.getContext('2d');
+                let w = img.width, h = img.height; if (state.rotate % 180 !== 0) { w = img.height; h = img.width; }
+                tempCanvas.width = w; tempCanvas.height = h;
+                const hue = state.filters.hueRotate || 0;
+                tCtx.filter = `brightness(${state.filters.brightness}%) contrast(${state.filters.contrast}%) saturate(${state.filters.saturate}%) blur(${state.filters.blur}px) grayscale(${state.filters.grayscale}%) sepia(${state.filters.sepia}%) hue-rotate(${hue}deg)`;
+                tCtx.translate(w/2, h/2); tCtx.rotate(state.rotate * Math.PI / 180); tCtx.scale(state.flipH, 1); tCtx.drawImage(img, -img.width/2, -img.height/2);
+                return tempCanvas;
+            }
+
+            function drawFrameBackground(ctx, width, height, style) {
+                ctx.fillStyle = '#ffffff'; 
+                if (style === 'film-black') ctx.fillStyle = '#1a1a1a';
+                else if (style === 'film-negative') ctx.fillStyle = '#222';
+                else if (style === 'coquette' || style === 'cute-pink') ctx.fillStyle = '#fce7f3';
+                else if (style === 'strawberry') ctx.fillStyle = '#fff1f2';
+                else if (style === 'butterfly') ctx.fillStyle = '#f3e8ff';
+                else if (style === 'y2k') { const grd = ctx.createLinearGradient(0, 0, width, height); grd.addColorStop(0, '#e2e8f0'); grd.addColorStop(1, '#94a3b8'); ctx.fillStyle = grd; }
+                else if (style === 'cloudy') { const grd = ctx.createLinearGradient(0, 0, 0, height); grd.addColorStop(0, '#bfdbfe'); grd.addColorStop(1, '#ffffff'); ctx.fillStyle = grd; }
+                else if (style === 'galaxy') { const grd = ctx.createLinearGradient(0, 0, 0, height); grd.addColorStop(0, '#0f172a'); grd.addColorStop(1, '#312e81'); ctx.fillStyle = grd; }
+                else if (style === 'sunset') { const grd = ctx.createLinearGradient(0, 0, 0, height); grd.addColorStop(0, '#fbbf24'); grd.addColorStop(0.4, '#fb923c'); grd.addColorStop(1, '#f472b6'); ctx.fillStyle = grd; }
+                else if (style === 'bubblegum') { const grd = ctx.createLinearGradient(0, 0, width, height); grd.addColorStop(0, '#f9a8d4'); grd.addColorStop(0.5, '#d8b4fe'); grd.addColorStop(1, '#67e8f9'); ctx.fillStyle = grd; }
+                else if (style === 'retro-grid') ctx.fillStyle = '#0f172a';
+                else if (style === 'cyber-dark') ctx.fillStyle = '#050505';
+                else if (style === 'minty') ctx.fillStyle = '#ecfdf5';
+                else if (style === 'polkadot') ctx.fillStyle = '#f3e8ff';
+                else if (style === 'cow') ctx.fillStyle = '#ffffff';
+                else if (style === 'old-paper') ctx.fillStyle = '#f4e4bc';
+                else if (style === 'elegant-cream') ctx.fillStyle = '#fdfbf7';
+                else if (style === 'elegant-sage') ctx.fillStyle = '#dbe7e4';
+                else if (style === 'elegant-mocha') ctx.fillStyle = '#f0e6d2';
+                else if (style === 'elegant-slate') ctx.fillStyle = '#cbd5e1';
+                else if (style === 'polaroid') ctx.fillStyle = '#fafafa';
+                else if (style === 'leopard') ctx.fillStyle = '#f4a460';
+                else if (style === 'zebra') ctx.fillStyle = '#ffffff';
+                else if (style === 'gingham-pink') ctx.fillStyle = '#fff0f5';
+                else if (style === 'gingham-blue') ctx.fillStyle = '#f0f8ff';
+                else if (style === 'memphis') ctx.fillStyle = '#f0f8ff';
+                else if (style === 'sakura') ctx.fillStyle = '#fff0f5';
+                else if (style === 'lemon') ctx.fillStyle = '#fffff0';
+                else if (style === 'donut') ctx.fillStyle = '#fff5ee';
+
+                ctx.fillRect(0, 0, width, height);
+
+                // Patterns
+                if (style === 'cow') { ctx.fillStyle = '#000000'; for(let i=0; i<15; i++) { const x = (i * 12345 % width); const y = (i * 67890 % height); ctx.beginPath(); ctx.ellipse(x, y, 40, 30, i, 0, Math.PI*2); ctx.fill(); } }
+                if (style === 'leopard') { 
+                    ctx.fillStyle = '#000'; ctx.globalAlpha = 0.8;
+                    for(let i=0; i<width; i+=80) for(let j=0; j<height; j+=80) { 
+                        const x = i + (j%160==0?0:40);
+                        const y = j;
+                        ctx.beginPath(); 
+                        ctx.arc(x, y, 15, 0, Math.PI*1.5); 
+                        ctx.lineWidth = 4; ctx.stroke();
+                        ctx.beginPath(); ctx.arc(x+5, y+5, 5, 0, Math.PI*2); ctx.fill();
+                    } 
+                    ctx.globalAlpha = 1.0;
+                }
+                if (style === 'zebra') {
+                     ctx.fillStyle = '#000';
+                     for(let i=0; i<height; i+=40) {
+                         ctx.beginPath();
+                         ctx.moveTo(0, i);
+                         ctx.bezierCurveTo(width/3, i+20, width*2/3, i-20, width, i+10);
+                         ctx.lineTo(width, i+30);
+                         ctx.bezierCurveTo(width*2/3, i, width/3, i+40, 0, i+20);
+                         ctx.fill();
+                     }
+                }
+                if (style === 'gingham-pink') {
+                    ctx.fillStyle = 'rgba(255, 105, 180, 0.2)';
+                    for(let i=0; i<width; i+=40) ctx.fillRect(i, 0, 20, height);
+                    for(let i=0; i<height; i+=40) ctx.fillRect(0, i, width, 20);
+                }
+                if (style === 'gingham-blue') {
+                    ctx.fillStyle = 'rgba(100, 149, 237, 0.2)';
+                    for(let i=0; i<width; i+=40) ctx.fillRect(i, 0, 20, height);
+                    for(let i=0; i<height; i+=40) ctx.fillRect(0, i, width, 20);
+                }
+                if (style === 'memphis') {
+                     const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#1A535C'];
+                     for(let k=0; k<50; k++) {
+                         ctx.fillStyle = colors[k%4];
+                         const x = (k * 9382 % width);
+                         const y = (k * 2832 % height);
+                         if (k%3===0) ctx.fillRect(x,y,20,20);
+                         else if (k%3===1) { ctx.beginPath(); ctx.arc(x,y,10,0,Math.PI*2); ctx.fill(); }
+                         else { ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+20,y+20); ctx.stroke(); }
+                     }
+                }
+                if (style === 'sakura') { ctx.font = "20px serif"; for(let i=0; i<width; i+=60) for(let j=0; j<height; j+=60) { ctx.fillText("🌸", i + (j%120==0?0:30), j); } }
+                if (style === 'lemon') { ctx.font = "24px serif"; for(let i=0; i<width; i+=70) for(let j=0; j<height; j+=70) { ctx.fillText("🍋", i + (j%140==0?0:35), j); } }
+                if (style === 'donut') { 
+                    const colors = ['#ff69b4', '#00ced1', '#ffd700'];
+                    for(let k=0; k<200; k++) {
+                        ctx.fillStyle = colors[k%3];
+                        const x = (k * 1337 % width);
+                        const y = (k * 7331 % height);
+                        ctx.fillRect(x, y, 6, 2);
+                    }
+                }
+
+                if (style === 'polkadot') { ctx.fillStyle = '#d8b4fe'; for(let i=0; i<width; i+=40) for(let j=0; j<height; j+=40) { ctx.beginPath(); ctx.arc(i, j, 4, 0, Math.PI*2); ctx.fill(); } }
+                if (style === 'galaxy' || style === 'y2k') { ctx.fillStyle = '#ffffff'; for(let k=0; k<50; k++) { const x = Math.random()*width; const y = Math.random()*height; ctx.beginPath(); ctx.arc(x,y, Math.random()*2,0,Math.PI*2); ctx.fill(); } }
+                if (style === 'retro-grid' || style === 'cyber-dark') { ctx.strokeStyle = (style==='cyber-dark' ? '#00ff00' : '#22d3ee'); ctx.lineWidth = 1; ctx.globalAlpha = 0.3; for(let i=0; i<width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,height); ctx.stroke(); } for(let j=0; j<height; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(width,j); ctx.stroke(); } ctx.globalAlpha = 1.0; }
+                if (style === 'checkers') { ctx.fillStyle = '#000000'; ctx.globalAlpha = 0.1; for(let i=0; i<width; i+=40) for(let j=0; j<height; j+=40) { if((i/40 + j/40)%2 === 0) ctx.fillRect(i,j,40,40); } ctx.globalAlpha = 1.0; }
+                if (style === 'strawberry') { ctx.font = "20px serif"; for(let i=0; i<width; i+=80) for(let j=0; j<height; j+=80) { ctx.fillText("🍓", i + (j%160==0?0:40), j); } }
+                if (style === 'butterfly') { ctx.font = "20px serif"; for(let i=0; i<width; i+=100) for(let j=0; j<height; j+=100) { ctx.fillText("🦋", i + (j%200==0?0:50), j); } }
+                if (style === 'old-paper') { ctx.fillStyle = '#8b4513'; ctx.globalAlpha = 0.1; for(let k=0; k<100; k++) { const x = Math.random()*width; const y = Math.random()*height; ctx.fillRect(x,y,2,2); } ctx.globalAlpha = 1.0; }
+            }
+
+            function drawFrameOverlays(ctx, width, height, style) {
+                if (style === 'film-black' || style === 'film-negative') { 
+                    ctx.fillStyle = '#ffffff'; 
+                    const holeSize = 10; const holeGap = 20; 
+                    for(let y=10; y<height; y+=holeGap*2) { 
+                        ctx.fillRect(8, y, holeSize, holeSize+4); 
+                        ctx.fillRect(width - 18, y, holeSize, holeSize+4); 
+                    } 
+                }
+                if (style === 'coquette') { ctx.font = "40px sans-serif"; ctx.fillText("🎀", 20, 30); ctx.fillText("🎀", width-20, 30); ctx.fillText("🎀", 20, height-140); ctx.fillText("🎀", width-20, height-140); }
+                if (style === 'cloudy') { ctx.font = "50px sans-serif"; ctx.fillText("☁️", 40, 40); ctx.fillText("☁️", width-40, 80); ctx.fillText("☁️", 60, height-130); }
+                if (style === 'camcorder') { 
+                    ctx.font = "bold 20px 'VT323', monospace"; ctx.fillStyle = '#00ff00';
+                    ctx.fillText("REC ●", 30, 40); 
+                    ctx.fillText("BAT [|||]", width - 100, 40);
+                    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(width/2-10, height/2); ctx.lineTo(width/2+10, height/2); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(width/2, height/2-10); ctx.lineTo(width/2, height/2+10); ctx.stroke();
+                }
+
+                ctx.save();
+                ctx.fillStyle = '#475569';
+                if (style === 'film-black' || style === 'galaxy' || style === 'retro-grid' || style === 'sunset' || style === 'camcorder' || style === 'cyber-dark' || style === 'film-negative') ctx.fillStyle = '#ffffff';
+                if (style === 'retro-grid') { ctx.fillStyle = "#22d3ee"; ctx.shadowColor = "#c026d3"; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2; }
+                if (style === 'camcorder' || style === 'cyber-dark') { ctx.fillStyle = "#00ff00"; ctx.shadowColor = "#00ff00"; ctx.shadowBlur = 4; }
+                if (style === 'film-negative') ctx.fillStyle = '#ddd';
+                if (style === 'polaroid') ctx.fillStyle = '#333'; 
+
+                const fonts = { 
+                    'modern': "bold 24px 'Plus Jakarta Sans', sans-serif", 
+                    'typewriter': "bold 24px 'Courier Prime', monospace", 
+                    'hand': "bold 28px 'Pacifico', cursive", 
+                    'retro': "40px 'VT323', monospace", 
+                    'script': "bold 32px 'Dancing Script', cursive", 
+                    'doodle': "bold 36px 'Amatic SC', cursive", 
+                    'serif': "bold 24px 'Playfair Display', serif", 
+                    'bold': "24px 'Bungee', cursive",
+                    'digital': "bold 24px 'Orbitron', sans-serif" 
+                };
+                
+                ctx.font = fonts[state.fontStyle] || fonts['modern'];
+                
+                const date = new Date().toLocaleDateString('id-ID');
+                const text = `SashinPicture • ${date}`;
+                const textWidth = ctx.measureText(text).width;
+                ctx.fillText(text, (width - textWidth)/2, height - 40);
+                ctx.restore();
+            }
+
+            function drawCenterCrop(ctx, img, x, y, w, h) {
+                const imgAspect = img.width / img.height; const areaAspect = w / h;
+                let sx, sy, sWidth, sHeight;
+                if (imgAspect > areaAspect) { sHeight = img.height; sWidth = img.height * areaAspect; sy = 0; sx = (img.width - sWidth) / 2; } 
+                else { sWidth = img.width; sHeight = img.width / areaAspect; sx = 0; sy = (img.height - sHeight) / 2; }
+                ctx.drawImage(img, sx, sy, sWidth, sHeight, x, y, w, h);
+            }
+
+            function drawShapePath(ctx, x, y, w, h, shape) {
+                ctx.beginPath();
+                if (shape === 'circle') { const radius = Math.min(w, h) / 2; ctx.arc(x + w/2, y + h/2, radius, 0, Math.PI * 2); } 
+                else if (shape === 'heart') { const topCurveHeight = h * 0.3; ctx.moveTo(x + w/2, y + topCurveHeight); ctx.bezierCurveTo(x + w/2, y, x, y, x, y + topCurveHeight); ctx.bezierCurveTo(x, y + (h + topCurveHeight)/2, x + w/2, y + h, x + w/2, y + h); ctx.bezierCurveTo(x + w/2, y + h, x + w, y + (h + topCurveHeight)/2, x + w, y + topCurveHeight); ctx.bezierCurveTo(x + w, y, x + w/2, y, x + w/2, y + topCurveHeight); ctx.closePath(); } 
+                else if (shape === 'pentagon') { const cx = x + w/2; const cy = y + h/2; const r = Math.min(w, h) / 2; for (let i = 0; i < 5; i++) { const angle = (Math.PI / 180) * (i * 72 - 90); const px = cx + r * Math.cos(angle); const py = cy + r * Math.sin(angle); if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); } ctx.closePath(); }
+                else if (shape === 'cloud') { const cx = x + w/2; const cy = y + h/2; ctx.arc(x + w*0.25, y + h*0.6, w*0.25, Math.PI * 0.5, Math.PI * 1.5); ctx.arc(x + w*0.5, y + h*0.4, w*0.3, Math.PI * 1, Math.PI * 2); ctx.arc(x + w*0.75, y + h*0.6, w*0.25, Math.PI * 1.5, Math.PI * 0.5); ctx.lineTo(x + w*0.25, y + h*0.85); ctx.closePath(); }
+                else { ctx.rect(x, y, w, h); }
+            }
+
+            // Rendering
+            function renderApp() {
+                if (!state.image) return;
+                if (state.layout === 'single') { 
+                    const processed = processImage(state.image); 
+                    renderSingle(processed); 
+                } else { 
+                    renderPhotobooth(); 
+                }
+                if (state.stickers.length > 0) renderStickers();
+            }
+
+            function renderSingle(sourceCanvas) {
+                let contentW, contentH;
+                if (state.aspectRatio === '1:1') { contentW = 1000; contentH = 1000; } 
+                else if (state.aspectRatio === '3:4') { contentW = 900; contentH = 1200; }
+                else { contentW = sourceCanvas.width; contentH = sourceCanvas.height; }
+
+                const padding = 60;
+                canvas.width = contentW + (padding * 2);
+                canvas.height = contentH + (padding * 2) + 80; 
+
+                drawFrameBackground(ctx, canvas.width, canvas.height, state.frameStyle);
+                
+                const scale = state.singleShapeScale;
+                const w = contentW * scale;
+                const h = contentH * scale;
+                const x = padding + (contentW - w) / 2;
+                const y = padding + (contentH - h) / 2;
+
+                if (state.frameStyle === 'polaroid') {
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    drawShapePath(ctx, x + 2, y + 2, w, h, state.singleShape);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                ctx.save();
+                drawShapePath(ctx, x, y, w, h, state.singleShape);
+                ctx.clip();
+                drawCenterCrop(ctx, sourceCanvas, x, y, w, h);
+                ctx.restore();
+
+                ctx.save();
+                drawShapePath(ctx, x, y, w, h, state.singleShape);
+                if (state.singleShape !== 'rect') {
+                     ctx.lineWidth = 4;
+                     if (state.frameStyle === 'film-black') ctx.strokeStyle = '#333';
+                     else if (state.frameStyle === 'coquette') ctx.strokeStyle = '#fbcfe8';
+                     else if (state.frameStyle === 'cloudy') ctx.strokeStyle = '#bfdbfe';
+                     else if (state.frameStyle === 'retro-grid') ctx.strokeStyle = '#22d3ee';
+                     else if (state.frameStyle === 'cyber-dark' || state.frameStyle === 'camcorder') ctx.strokeStyle = '#00ff00';
+                     else ctx.strokeStyle = '#ffffff'; 
+                     ctx.stroke();
+                } else {
+                    if (state.frameStyle === 'film-black' || state.frameStyle === 'film-negative') { ctx.strokeStyle = '#333'; ctx.lineWidth = 4; ctx.stroke(); }
+                    if (state.frameStyle === 'retro-grid') { ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 4; ctx.stroke(); }
+                    if (state.frameStyle === 'cyber-dark') { ctx.strokeStyle = '#00ff00'; ctx.lineWidth = 2; ctx.stroke(); }
+                }
+                ctx.restore();
+
+                drawFrameOverlays(ctx, canvas.width, canvas.height, state.frameStyle);
+            }
+
+            function renderPhotobooth() {
+                let photoW, photoH, scale, stripH;
+                const baseImg = state.photoboothSlots[0].img || state.image;
+                const processedBase = processImage(baseImg); 
+
+                let canvasW = PB_STRIP_W; 
+                
+                if (state.pbPaperSize === '5x15') {
+                    canvasW = 600;
+                    stripH = 1800; 
+                    photoW = 480;
+                    photoH = 480; 
+                } else {
+                    photoW = PB_STRIP_W - (PB_PADDING * 2);
+                    scale = photoW / processedBase.width;
+                    photoH = processedBase.height * scale;
+                    stripH = PB_PADDING + (photoH * PB_COUNT) + (PB_GAP * (PB_COUNT - 1)) + PB_BOTTOM;
+                }
+
+                canvas.width = canvasW;
+                canvas.height = stripH;
+
+                drawFrameBackground(ctx, canvas.width, canvas.height, state.frameStyle);
+
+                let currentY;
+                if (state.pbPaperSize === '5x15') {
+                     currentY = 90; 
+                } else {
+                    currentY = PB_PADDING;
+                }
+
+                state.photoboothSlots.forEach((slot, index) => {
+                    const currentImg = slot.img || state.image;
+                    const processed = processImage(currentImg);
+                    
+                    const shapeScale = slot.shapeScale || 1;
+                    const w = photoW * shapeScale;
+                    const h = photoH * shapeScale;
+                    
+                    const x = (canvasW - w) / 2;
+                    const y = currentY + (photoH - h) / 2;
+
+                    if (state.frameStyle === 'polaroid') {
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                        drawShapePath(ctx, x + 2, y + 2, w, h, slot.shape);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+
+                    ctx.save();
+                    drawShapePath(ctx, x, y, w, h, slot.shape);
+                    ctx.clip();
+                    
+                    ctx.translate(x + w/2, y + h/2); 
+                    ctx.scale(slot.zoom, slot.zoom); 
+                    ctx.translate(slot.panX, slot.panY); 
+                    ctx.translate(-(x + w/2), -(y + h/2)); 
+                    
+                    drawCenterCrop(ctx, processed, x, y, w, h);
+                    ctx.restore();
+
+                    ctx.save();
+                    drawShapePath(ctx, x, y, w, h, slot.shape);
+                    if (state.activeSlotIndex === index) {
+                        ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 4; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]); 
+                    } else if (slot.shape !== 'rect') {
+                         ctx.lineWidth = 4;
+                         if (state.frameStyle === 'film-black') ctx.strokeStyle = '#333';
+                         else if (state.frameStyle === 'coquette') ctx.strokeStyle = '#fbcfe8';
+                         else if (state.frameStyle === 'cloudy') ctx.strokeStyle = '#bfdbfe';
+                         else if (state.frameStyle === 'retro-grid') ctx.strokeStyle = '#22d3ee';
+                         else if (state.frameStyle === 'cyber-dark' || state.frameStyle === 'camcorder') ctx.strokeStyle = '#00ff00';
+                         else ctx.strokeStyle = '#ffffff'; 
+                         ctx.stroke();
+                    } else {
+                        if (state.frameStyle === 'film-black') { ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke(); }
+                        if (state.frameStyle === 'retro-grid') { ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 4; ctx.stroke(); }
+                        if (state.frameStyle === 'cyber-dark') { ctx.strokeStyle = '#00ff00'; ctx.lineWidth = 2; ctx.stroke(); }
+                    }
+                    ctx.restore();
+
+                    if (state.pbPaperSize === '5x15') {
+                        currentY += photoH + 90; 
+                    } else {
+                        currentY += photoH + PB_GAP;
+                    }
+                });
+
+                drawFrameOverlays(ctx, canvas.width, canvas.height, state.frameStyle);
+            }
+
+            function renderStickers() {
+                state.stickers.forEach(s => {
+                    ctx.save(); 
+                    ctx.translate(s.x, s.y); 
+                    ctx.rotate(s.rotation * Math.PI / 180);
+                    if (s.flipX) ctx.scale(-1, 1); 
+                    ctx.font = `${s.size}px sans-serif`; 
+                    ctx.textAlign = 'center'; 
+                    ctx.textBaseline = 'middle'; 
+                    ctx.fillText(s.text, 0, 0);
+                    
+                    if (s.id === state.activeStickerId) {
+                        ctx.strokeStyle = '#ec4899'; 
+                        ctx.lineWidth = 2; 
+                        ctx.setLineDash([5, 5]);
+                        const metrics = ctx.measureText(s.text); 
+                        const w = metrics.width + 20; 
+                        const h = s.size + 20;
+                        ctx.strokeRect(-w/2, -h/2, w, h); 
+                        ctx.fillStyle = '#ec4899'; 
+                        ctx.beginPath(); 
+                        ctx.arc(0, -h/2, 5, 0, Math.PI * 2); 
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                });
+            }
+
+            function showToast(msg, type='info') {
+                const con = document.getElementById('toast-container'); const div = document.createElement('div');
+                const bg = type === 'success' ? 'bg-green-500' : 'bg-slate-800';
+                div.className = `${bg} text-white px-4 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 transform transition-all duration-300 translate-x-full`;
+                div.innerHTML = `<span>${msg}</span>`; con.appendChild(div);
+                requestAnimationFrame(() => div.classList.remove('translate-x-full'));
+                setTimeout(() => { div.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => div.remove(), 300); }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
